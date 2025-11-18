@@ -9,7 +9,7 @@ func AnyShutdown() <-chan struct{} {
 	interruptCh := Interrupt()
 	terminateCh := Terminate()
 	quitCh := Quit()
-	
+
 	go func() {
 		select {
 		case <-interruptCh:
@@ -33,7 +33,7 @@ func GracefulShutdown() <-chan struct{} {
 	ch := make(chan struct{})
 	terminateCh := Terminate()
 	hangupCh := Hangup()
-	
+
 	go func() {
 		select {
 		case <-terminateCh:
