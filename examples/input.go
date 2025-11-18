@@ -17,3 +17,4 @@ func main() {
 	fmt.Println("Type 'q' and press Enter to quit...")
 	<-signals.Quit()
 	fmt.Println("Quit command received!")
+}

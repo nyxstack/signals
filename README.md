@@ -171,6 +171,32 @@ func worker(ctx context.Context) {
 - **Daemon Processes**: Configuration reload on SIGHUP
 - **Interactive Applications**: User-controlled exit with 'q' key
 
+## Goroutine Lifecycle
+
+Each signal function spawns a goroutine to monitor for signals or input. Understanding the lifecycle is important:
+
+### Signal Functions (Interrupt, Terminate, Hangup, etc.)
+- Goroutine runs until the signal is received
+- After signal receipt, the goroutine cleans up automatically using `defer signal.Stop()`
+- These are lightweight and designed for one-time use per call
+
+### Input Functions (Quit, Enter, Any)
+- Goroutines block on `stdin` reads until input is received or `stdin` closes
+- Designed for typical CLI usage where the program exits after receiving input
+- For long-running applications with multiple input reads, call the function each time rather than reusing the channel
+
+### Composite Functions (AnyShutdown, GracefulShutdown)
+- Spawn multiple signal monitoring goroutines internally
+- When any monitored signal fires, the returned channel closes
+- Unused signal goroutines clean up when their channels are garbage collected
+
+### Best Practices
+
+1. **One-time use**: These functions are designed for blocking until a signal/input is received, then the program typically exits
+2. **Don't abandon channels**: If you stop listening to a returned channel, call the function again when needed rather than keeping old channels around
+3. **Long-running apps**: For applications that need repeated signal handling, each new operation should call the function again
+4. **Testing**: In tests, close stdin or send signals to ensure goroutines terminate properly
+
 ## Requirements
 
 - Go 1.24.2 or later
